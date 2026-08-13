@@ -1,0 +1,56 @@
+{
+  "name": "passkit-typescript-grpc-quickstart",
+  "version": "1.1.124",
+  "description": "Getting started with PassKit and TypeScript",
+  "type": "module",
+  "author": "PassKit",
+  "license": "MIT",
+  "homepage": "https://github.com/PassKit/passkit-typescript-grpc-quickstart#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PassKit/passkit-typescript-grpc-quickstart.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PassKit/passkit-typescript-grpc-quickstart/issues"
+  },
+  "keywords": [
+    "passkit",
+    "typescript",
+    "grpc",
+    "apple-wallet",
+    "google-wallet",
+    "loyalty",
+    "coupons",
+    "event-tickets",
+    "flights"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p tsconfig.esm.json && node scripts/write-package-markers.mjs",
+    "build:cjs": "tsc -p tsconfig.cjs.json && node scripts/write-package-markers.mjs",
+    "postinstall": "npm run build --prefix node_modules/@passkit/typescript-grpc-sdk",
+    "start": "npm run start:esm",
+    "start:esm": "node dist/esm/main.js",
+    "start:cjs": "node dist/cjs/main.js",
+    "dev": "npm run dev:esm",
+    "dev:esm": "node --import ts-node/esm main.ts",
+    "dev:cjs": "npm run build:cjs && node dist/cjs/main.js",
+    "test": "npm run build && node --check dist/esm/main.js && node --check dist/cjs/main.js"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.10.2",
+    "@connectrpc/connect": "^2.1.0",
+    "@connectrpc/connect-node": "^2.1.0",
+    "@passkit/typescript-grpc-sdk": "https://github.com/PassKit/passkit-typescript-grpc-sdk/archive/ac92482c5afe1150be34b6a5bf712d28e3473b51.tar.gz",
+    "minimist": "^1.2.8"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^22.13.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

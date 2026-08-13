@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./dist/cjs",
+    "baseUrl": ".",
+    "paths": {
+      "@passkit/typescript-grpc-sdk": ["node_modules/@passkit/typescript-grpc-sdk/dist/types/index.d.ts"],
+      "@passkit/typescript-grpc-sdk/*": ["node_modules/@passkit/typescript-grpc-sdk/dist/types/*"]
+    }
+  }
+}
