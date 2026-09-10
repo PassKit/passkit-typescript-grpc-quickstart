@@ -49,7 +49,7 @@
     "security": "npm audit --audit-level=high"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^2.10.2",
+    "@bufbuild/protobuf": "^2.14.1",
     "@connectrpc/connect": "^2.1.0",
     "@connectrpc/connect-node": "^2.1.0",
     "@passkit/typescript-grpc-sdk": "https://github.com/PassKit/passkit-typescript-grpc-sdk/archive/a0087bfb62ca1c8e9670359e225386b37b9a4cd7.tar.gz",
