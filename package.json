@@ -58,8 +58,8 @@
   },
   "devDependencies": {
     "@types/minimist": "^1.2.5",
-    "@types/node": "^22.13.10",
+    "@types/node": "^26.4.1",
     "tsx": "^4.23.13",
-    "typescript": "^5.9.2"
+    "typescript": "^7.0.2"
   }
 }
