@@ -51,7 +51,7 @@
   "dependencies": {
     "@bufbuild/protobuf": "^2.10.2",
     "@connectrpc/connect": "^2.1.0",
-    "@connectrpc/connect-node": "^2.1.0",
+    "@connectrpc/connect-node": "^2.2.0",
     "@passkit/typescript-grpc-sdk": "https://github.com/PassKit/passkit-typescript-grpc-sdk/archive/a0087bfb62ca1c8e9670359e225386b37b9a4cd7.tar.gz",
     "dotenv": "^17.4.2",
     "minimist": "^1.2.8"
