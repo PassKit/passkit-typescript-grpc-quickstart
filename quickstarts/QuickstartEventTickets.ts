@@ -44,8 +44,8 @@ export default class QuickStartEventTickets {
     }
 
     async cleanUp(): Promise<void> {
-        await passKitClient.eventTickets.deleteProduction(create(ProductionSchema, { id: this.productionId.id }));
-        await passKitClient.templates.deleteTemplate(this.eventTemplateId);
+        if (this.productionId.id) await passKitClient.eventTickets.deleteProduction(create(ProductionSchema, { id: this.productionId.id }));
+        if (this.eventTemplateId.id) await passKitClient.templates.deleteTemplate(this.eventTemplateId);
         for (const id of [this.imageIds.icon, this.imageIds.logo, this.imageIds.hero, this.imageIds.strip, this.imageIds.appleLogo]) {
             if (id) await passKitClient.images.deleteImage({ id });
         }

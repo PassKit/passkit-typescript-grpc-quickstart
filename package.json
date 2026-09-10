@@ -1,7 +1,8 @@
 {
   "name": "passkit-typescript-grpc-quickstart",
-  "version": "1.1.124",
-  "description": "Getting started with PassKit and TypeScript",
+  "version": "1.1.162",
+  "private": true,
+  "description": "Developer-friendly PassKit TypeScript gRPC quickstart examples",
   "type": "module",
   "author": "PassKit",
   "license": "MIT",
@@ -35,22 +36,30 @@
     "start": "npm run start:esm",
     "start:esm": "node dist/esm/main.js",
     "start:cjs": "node dist/cjs/main.js",
+    "example": "npm run dev:esm -- --quickstart",
+    "example:loyalty": "npm run dev:esm -- --quickstart loyalty",
+    "example:coupons": "npm run dev:esm -- --quickstart coupons",
+    "example:tickets": "npm run dev:esm -- --quickstart event-tickets",
+    "example:flights": "npm run dev:esm -- --quickstart flights",
     "dev": "npm run dev:esm",
-    "dev:esm": "node --import ts-node/esm main.ts",
+    "dev:esm": "tsx main.ts",
     "dev:cjs": "npm run build:cjs && node dist/cjs/main.js",
-    "test": "npm run build && node --check dist/esm/main.js && node --check dist/cjs/main.js"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run typecheck && npm run build && node scripts/test-builds.mjs",
+    "security": "npm audit --audit-level=high"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.10.2",
     "@connectrpc/connect": "^2.1.0",
     "@connectrpc/connect-node": "^2.1.0",
-    "@passkit/typescript-grpc-sdk": "https://github.com/PassKit/passkit-typescript-grpc-sdk/archive/ac92482c5afe1150be34b6a5bf712d28e3473b51.tar.gz",
+    "@passkit/typescript-grpc-sdk": "https://github.com/PassKit/passkit-typescript-grpc-sdk/archive/a0087bfb62ca1c8e9670359e225386b37b9a4cd7.tar.gz",
+    "dotenv": "^17.4.2",
     "minimist": "^1.2.8"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.5",
     "@types/node": "^22.13.10",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.2"
   }
 }

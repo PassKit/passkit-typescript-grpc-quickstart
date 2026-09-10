@@ -1,133 +1,122 @@
 # PassKit TypeScript gRPC Quickstart
 
-This quickstart uses the current [PassKit TypeScript gRPC SDK](https://github.com/PassKit/passkit-typescript-grpc-sdk) and follows the flows in PassKit's Node and Java quickstarts.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-It demonstrates how to:
+Create a working PassKit membership card, coupon, event ticket, or flight boarding pass with the TypeScript gRPC SDK. Each guided workflow runs with one command and cleans up the test resources it creates.
 
-- connect to PassKit with mutual TLS;
-- upload pass images;
-- create templates, a membership program, and tiers;
-- enrol and update members;
-- check a member in and out;
-- list members and member events with server-streaming RPCs;
-- create a carrier, airports, flight designator, flight, and boarding pass; and
-- clean up the objects created by the example.
+Both ESM and CommonJS builds are supported and tested.
 
-## Requirements
+## Quick start
 
-- Node.js 20 or later
-- A free [PassKit account](https://app.passkit.com)
-- PassKit SDK credentials from **Developer Tools** in your account
+You need Node.js 20 or later, a free [PassKit account](https://app.passkit.com/signup), and PassKit SDK credentials.
 
-## Setup
+### 1. Install the project
 
-1. Put the following credentials in `certs/`:
-
-   - `ca-chain.pem`
-   - `certificate.pem`
-   - `key.pem`
-
-2. Update the API region in `config/config.ts`. Use `grpc.pub1.passkit.io` for Europe or `grpc.pub2.passkit.io` for the US.
-
-3. Install dependencies. The latest SDK commit is currently ahead of npm, so it is pinned to its GitHub source archive and built automatically during installation.
-
-   ```bash
-   npm install
-   ```
-
-4. To run flights, provide the identifier of an Apple pass certificate already uploaded to PassKit:
-
-   ```bash
-   export PASSKIT_APPLE_CERTIFICATE='pass.com.your-airline'
-   ```
-
-5. Supply the private-key passphrase and run all four quickstarts:
-
-   ```bash
-   PASSKIT_PASSPHRASE='your-passphrase' npm run dev
-   ```
-
-Run one quickstart at a time with `--quickstart`:
-
-```bash
-npm run dev -- --quickstart loyalty
-npm run dev -- --quickstart coupons
-npm run dev -- --quickstart event-tickets
-npm run dev -- --quickstart flights
+```sh
+git clone https://github.com/PassKit/passkit-typescript-grpc-quickstart.git
+cd passkit-typescript-grpc-quickstart
+npm install
 ```
 
-The examples delete the resources they create after completing. Pass `--keep` if you want to inspect them in your PassKit account:
+The quickstart currently installs SDK `1.1.162` from its pinned GitHub revision and builds it during installation.
 
-```bash
-npm run dev -- --quickstart loyalty --keep
+### 2. Add your credentials
+
+In PassKit, open **Developer Tools → SDK Credentials**, choose a private-key password, and download `certificate.pem`, `key.pem`, and `ca-chain.pem`.
+
+Create `certs/`, place all three files there, then create your local configuration:
+
+```sh
+mkdir -p certs
+cp /path/to/downloads/certificate.pem certs/
+cp /path/to/downloads/key.pem certs/
+cp /path/to/downloads/ca-chain.pem certs/
+cp .env.example .env
 ```
+
+Open `.env` and replace `your_passphrase` with the password chosen when the credentials were generated. Use `grpc.pub1.passkit.io` for Europe or `grpc.pub2.passkit.io` for the US. Your account data exists in only one region.
+
+Credentials and `.env` are ignored by Git. Never commit or share them.
+
+### 3. Run an example
+
+```sh
+npm run example:loyalty
+npm run example:coupons
+npm run example:tickets
+npm run example:flights
+```
+
+Run all four workflows with `npm run dev`. Flights additionally require an Apple pass certificate uploaded to PassKit; put its pass type identifier in `.env` as `PASSKIT_APPLE_CERTIFICATE`.
+
+When successful, the workflow prints the generated pass URL. Set `PASSKIT_KEEP_ASSETS=true` or pass `--keep` to retain resources for inspection; you must then remove them manually.
+
+## What the examples cover
+
+- `loyalty`: images, templates, program, tiers, enrolment, lookup, member events, check-in/out, and points updates
+- `coupons`: images, templates, campaign, offers, issuance, lookup, listing, redemption, and voiding
+- `event-tickets`: images, template, production, venue, event, ticket type, issuance, lookup, listing, validation, and redemption
+- `flights`: images, template, reusable carrier and airports, flight, designator, and boarding pass
+
+The focused workflows live in [`quickstarts`](quickstarts). The shared client also exposes analytics, certificates, distribution, integrations, and raw-pass services, giving developers access to the wider SDK without creating another connection.
+
+ConnectRPC uses a reusable HTTP/2 transport, so requests share the underlying gRPC connection.
 
 ## ESM and CommonJS
 
-The repository builds and runs in both module formats. You do not need to edit imports or change `package.json` when switching—the npm script selects the appropriate build.
-
-### Run from TypeScript during development
-
-Use ESM:
-
-```bash
+```sh
+# Run TypeScript as ESM (default)
 npm run dev:esm -- --quickstart loyalty
-```
 
-Use CommonJS:
-
-```bash
+# Build and run CommonJS
 npm run dev:cjs -- --quickstart loyalty
-```
 
-`npm run dev` is an alias for `dev:esm`, so ESM is the default. The `--` forwards subsequent options such as `--quickstart` and `--keep` to the quickstart.
-
-### Run compiled JavaScript
-
-First build both formats:
-
-```bash
+# Build both formats and run compiled output
 npm run build
+npm run start:esm -- --quickstart coupons
+npm run start:cjs -- --quickstart coupons
 ```
-
-Then select the format when starting:
-
-```bash
-# ESM
-npm run start:esm -- --quickstart loyalty
-
-# CommonJS
-npm run start:cjs -- --quickstart loyalty
-```
-
-`npm start` is an alias for `start:esm`. To retain created PassKit resources, the same flags work with either format:
-
-```bash
-npm run start:esm -- --quickstart coupons --keep
-npm run start:cjs -- --quickstart coupons --keep
-```
-
-### Build one format only
-
-```bash
-npm run build:esm
-npm run build:cjs
-```
-
-The ESM compiler uses `tsconfig.esm.json` and writes to `dist/esm`. The CommonJS compiler uses `tsconfig.cjs.json` and writes to `dist/cjs`. Each build script also writes a small `package.json` into the output directories so Node interprets their `.js` files correctly.
 
 | Task | ESM | CommonJS |
 | --- | --- | --- |
 | Develop/run | `npm run dev:esm` | `npm run dev:cjs` |
 | Build | `npm run build:esm` | `npm run build:cjs` |
-| Run built output | `npm run start:esm` | `npm run start:cjs` |
+| Run compiled | `npm run start:esm` | `npm run start:cjs` |
 | Output | `dist/esm` | `dist/cjs` |
 
-## Build
+## Configuration
 
-```bash
-npm run build
-npm start
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PASSKIT_PASSPHRASE` | Required | Password for the encrypted SDK private key |
+| `PASSKIT_ADDRESS` | `grpc.pub1.passkit.io` | PassKit API region |
+| `PASSKIT_PORT` | `443` | gRPC port |
+| `PASSKIT_ROOT_CERT` | `./certs/ca-chain.pem` | PassKit CA-chain path |
+| `PASSKIT_PRIVATE_KEY` | `./certs/key.pem` | Encrypted private-key path |
+| `PASSKIT_CERTIFICATE` | `./certs/certificate.pem` | Client-certificate path |
+| `PASSKIT_RECIPIENT_EMAIL` | Empty | Optional pass recipient |
+| `PASSKIT_APPLE_CERTIFICATE` | Empty | Apple pass type identifier required for flights |
+| `PASSKIT_KEEP_ASSETS` | `false` | Keep generated resources after a workflow |
+
+Legacy `PASSKIT_GRPC_ADDRESS` and `PASSKIT_GRPC_PORT` names remain supported.
+
+## Checks
+
+```sh
+npm test
+npm run security
 ```
 
-The SDK uses Buf-generated message schemas. Create messages with `create(Schema, initialValues)`. ConnectRPC supplies the gRPC transport and exposes server streams as async iterables.
+`npm test` type-checks the source, builds ESM and CommonJS, and smoke-tests both outputs without connecting to PassKit.
+
+## Troubleshooting
+
+- **Credential file not found:** ensure all three PEM files are in `certs/` and run commands from the repository root.
+- **Private key cannot be loaded:** verify `PASSKIT_PASSPHRASE` is the SDK credential password, not your PassKit login password.
+- **Authentication fails:** confirm that `PASSKIT_ADDRESS` matches your account’s API region.
+- **Flights are rejected:** upload an Apple pass certificate and set `PASSKIT_APPLE_CERTIFICATE` to its pass type identifier.
+- **Resources remain:** cleanup is best-effort. Remove remaining test resources in PassKit, especially after interrupted runs.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

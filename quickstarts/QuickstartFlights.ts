@@ -1,4 +1,5 @@
 import { create } from '@bufbuild/protobuf';
+import { Code, ConnectError } from '@connectrpc/connect';
 import { readFile } from 'node:fs/promises';
 import { DateSchema, LocalDateTimeSchema, TimeSchema, type Date as PassKitDate } from '@passkit/typescript-grpc-sdk/io/common/common_objects_pb';
 import { PassProtocol } from '@passkit/typescript-grpc-sdk/io/common/protocols_pb';
@@ -25,9 +26,12 @@ export default class QuickStartFlights {
     private imageIds: ImageIds = create(ImageIdsSchema);
     private templateId = '';
     private departureDate: PassKitDate = create(DateSchema);
+    private createdCarrier = false;
+    private createdOrigin = false;
+    private createdDestination = false;
 
     async runQuickStart(): Promise<void> {
-        if (config.APPLE_CERTIFICATE === 'pass.com.example') {
+        if (!config.APPLE_CERTIFICATE) {
             throw new Error('Set PASSKIT_APPLE_CERTIFICATE to your uploaded Apple pass certificate ID before running flights.');
         }
         this.departureDate = this.futureDepartureDate();
@@ -66,15 +70,19 @@ export default class QuickStartFlights {
             deplaningPoint: DESTINATION,
             departureDate: this.departureDate,
         };
-        await passKitClient.flights.deleteFlight(create(FlightRequestSchema, flight));
-        await passKitClient.flights.deleteFlightDesignator(create(FlightDesignatorRequestSchema, {
-            carrierCode: CARRIER_CODE, flightNumber: FLIGHT_NUMBER, revision: DESIGNATOR_REVISION,
-        }));
-        await passKitClient.flights.deletePort(create(AirportCodeSchema, { airportCode: ORIGIN }));
-        await passKitClient.flights.deletePort(create(AirportCodeSchema, { airportCode: DESTINATION }));
-        await new Promise((resolve) => setTimeout(resolve, 5_000));
-        await passKitClient.flights.deleteCarrier(create(CarrierCodeSchema, { carrierCode: CARRIER_CODE }));
-        await passKitClient.templates.deleteTemplate({ id: this.templateId });
+        if (this.departureDate.year) {
+            await passKitClient.flights.deleteFlight(create(FlightRequestSchema, flight));
+            await passKitClient.flights.deleteFlightDesignator(create(FlightDesignatorRequestSchema, {
+                carrierCode: CARRIER_CODE, flightNumber: FLIGHT_NUMBER, revision: DESIGNATOR_REVISION,
+            }));
+        }
+        if (this.createdOrigin) await passKitClient.flights.deletePort(create(AirportCodeSchema, { airportCode: ORIGIN }));
+        if (this.createdDestination) await passKitClient.flights.deletePort(create(AirportCodeSchema, { airportCode: DESTINATION }));
+        if (this.createdCarrier) {
+            await new Promise((resolve) => setTimeout(resolve, 5_000));
+            await passKitClient.flights.deleteCarrier(create(CarrierCodeSchema, { carrierCode: CARRIER_CODE }));
+        }
+        if (this.templateId) await passKitClient.templates.deleteTemplate({ id: this.templateId });
         for (const id of [this.imageIds.icon, this.imageIds.logo, this.imageIds.appleLogo]) {
             if (id) await passKitClient.images.deleteImage({ id });
         }
@@ -109,19 +117,31 @@ export default class QuickStartFlights {
     }
 
     private async createCarrierAndPorts(): Promise<void> {
-        await passKitClient.flights.createCarrier(create(CarrierSchema, {
-            airlineName: 'Quickstart Airline',
-            iataCarrierCode: CARRIER_CODE,
-            passTypeIdentifier: config.APPLE_CERTIFICATE,
-        }));
-        await passKitClient.flights.createPort(create(PortSchema, {
+        this.createdCarrier = await this.createOrReuse('Carrier', CARRIER_CODE, () => passKitClient.flights.createCarrier(create(CarrierSchema, {
+            airlineName: 'Quickstart Airline', iataCarrierCode: CARRIER_CODE, passTypeIdentifier: config.APPLE_CERTIFICATE,
+        })));
+        this.createdOrigin = await this.createOrReuse('Airport', ORIGIN, () => passKitClient.flights.createPort(create(PortSchema, {
             airportName: 'Quickstart Origin Airport', cityName: 'Origin', iataAirportCode: ORIGIN,
             icaoAirportCode: 'YYYY', countryCode: 'GB', timezone: 'Europe/London',
-        }));
-        await passKitClient.flights.createPort(create(PortSchema, {
+        })));
+        this.createdDestination = await this.createOrReuse('Airport', DESTINATION, () => passKitClient.flights.createPort(create(PortSchema, {
             airportName: 'Quickstart Destination Airport', cityName: 'Destination', iataAirportCode: DESTINATION,
             icaoAirportCode: 'VHHH', countryCode: 'HK', timezone: 'Asia/Hong_Kong',
-        }));
+        })));
+    }
+
+    private async createOrReuse(label: string, code: string, operation: () => Promise<unknown>): Promise<boolean> {
+        try {
+            await operation();
+            console.log(`Created ${label.toLowerCase()} ${code}.`);
+            return true;
+        } catch (error) {
+            if (error instanceof ConnectError && error.code === Code.AlreadyExists) {
+                console.log(`${label} ${code} already exists; reusing it.`);
+                return false;
+            }
+            throw error;
+        }
     }
 
     private async createFlightAndDesignator(): Promise<void> {

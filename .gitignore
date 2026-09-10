@@ -1,5 +1,12 @@
-certs/
 node_modules/
 dist/
-bin/
+coverage/
+.env
+.env.*
+!.env.example
+certs/
+*.log
+*.tgz
+.DS_Store
+.idea/
 .vscode/

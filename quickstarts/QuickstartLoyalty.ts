@@ -73,9 +73,9 @@ class QuickStartLoyalty {
     }
 
     async cleanUp(): Promise<void> {
-        await passKitClient.members.deleteProgram(this.programId);
-        await passKitClient.templates.deleteTemplate(this.bronzeTemplateId);
-        await passKitClient.templates.deleteTemplate(this.silverTemplateId);
+        if (this.programId.id) await passKitClient.members.deleteProgram(this.programId);
+        if (this.bronzeTemplateId.id) await passKitClient.templates.deleteTemplate(this.bronzeTemplateId);
+        if (this.silverTemplateId.id) await passKitClient.templates.deleteTemplate(this.silverTemplateId);
 
         for (const id of [
             this.imageIds.icon,

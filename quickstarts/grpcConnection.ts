@@ -9,10 +9,15 @@ import { EventTickets } from '@passkit/typescript-grpc-sdk/io/event_tickets/a_rp
 import { Flights } from '@passkit/typescript-grpc-sdk/io/flights/a_rpc_pb';
 import { Members } from '@passkit/typescript-grpc-sdk/io/member/a_rpc_pb';
 import { SingleUseCoupons } from '@passkit/typescript-grpc-sdk/io/single_use_coupons/a_rpc_pb';
+import { Analytics } from '@passkit/typescript-grpc-sdk/io/analytics/a_rpc_pb';
+import { Certificates } from '@passkit/typescript-grpc-sdk/io/core/a_rpc_certificates_pb';
+import { Distribution } from '@passkit/typescript-grpc-sdk/io/core/a_rpc_distribution_pb';
+import { Integrations } from '@passkit/typescript-grpc-sdk/io/core/a_rpc_others_pb';
+import { Raw } from '@passkit/typescript-grpc-sdk/io/raw/a_rpc_pb';
 
 import config from '../config/config.js';
 
-class PassKitClient {
+export class PassKitClient {
     readonly users: Client<typeof Users>;
     readonly templates: Client<typeof Templates>;
     readonly members: Client<typeof Members>;
@@ -20,6 +25,11 @@ class PassKitClient {
     readonly coupons: Client<typeof SingleUseCoupons>;
     readonly eventTickets: Client<typeof EventTickets>;
     readonly flights: Client<typeof Flights>;
+    readonly analytics: Client<typeof Analytics>;
+    readonly certificates: Client<typeof Certificates>;
+    readonly distribution: Client<typeof Distribution>;
+    readonly integrations: Client<typeof Integrations>;
+    readonly raw: Client<typeof Raw>;
 
     constructor() {
         const encryptedKey = fs.readFileSync(config.PRIVATE_KEY);
@@ -45,7 +55,25 @@ class PassKitClient {
         this.coupons = createClient(SingleUseCoupons, transport);
         this.eventTickets = createClient(EventTickets, transport);
         this.flights = createClient(Flights, transport);
+        this.analytics = createClient(Analytics, transport);
+        this.certificates = createClient(Certificates, transport);
+        this.distribution = createClient(Distribution, transport);
+        this.integrations = createClient(Integrations, transport);
+        this.raw = createClient(Raw, transport);
     }
 }
 
-export default new PassKitClient();
+let sharedClient: PassKitClient | undefined;
+
+export function getPassKitClient(): PassKitClient {
+    sharedClient ??= new PassKitClient();
+    return sharedClient;
+}
+
+// Preserve the concise passKitClient.members style while delaying certificate
+// loading until the selected workflow actually makes its first API call.
+const passKitClient = new Proxy({} as PassKitClient, {
+    get: (_target, property: keyof PassKitClient) => getPassKitClient()[property],
+});
+
+export default passKitClient;

@@ -56,9 +56,9 @@ export default class QuickStartCoupons {
     }
 
     async cleanUp(): Promise<void> {
-        await passKitClient.coupons.deleteCouponCampaign(this.campaignId);
-        await passKitClient.templates.deleteTemplate(this.baseTemplateId);
-        await passKitClient.templates.deleteTemplate(this.vipTemplateId);
+        if (this.campaignId.id) await passKitClient.coupons.deleteCouponCampaign(this.campaignId);
+        if (this.baseTemplateId.id) await passKitClient.templates.deleteTemplate(this.baseTemplateId);
+        if (this.vipTemplateId.id) await passKitClient.templates.deleteTemplate(this.vipTemplateId);
         for (const id of [this.imageIds.icon, this.imageIds.logo, this.imageIds.hero, this.imageIds.strip, this.imageIds.appleLogo]) {
             if (id) await passKitClient.images.deleteImage({ id });
         }
